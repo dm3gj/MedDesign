@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 6: From App to Product | HDS 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #111111;
+    --bg-light: #FAFAFA;
+    --bg-card: #FFFFFF;
+    --text-primary: #111111;
+    --text-secondary: #555555;
+    --text-light: #FAFAFA;
+    --text-muted: #888888;
+    --accent: #10B981;
+    --accent-dim: #064E3B;
+    --border: #E5E5E5;
+    --code-bg: #1E1E1E;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg-light);
+    color: var(--text-primary);
+    line-height: 1.6;
+  }
+
+  /* Slide container */
+  .slide {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4rem 8%;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .slide.dark {
+    background: var(--bg-dark);
+    color: var(--text-light);
+  }
+
+  .slide.dark .text-secondary { color: #AAAAAA; }
+  .slide.dark .text-muted { color: #777777; }
+
+  /* Typography */
+  h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+  }
+
+  h2 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+  }
+
+  .subtitle {
+    font-size: clamp(1.1rem, 2vw, 1.4rem);
+    color: var(--text-secondary);
+    max-width: 700px;
+    line-height: 1.7;
+  }
+
+  .slide.dark .subtitle { color: #BBBBBB; }
+
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+  }
+
+  .big-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: clamp(4rem, 10vw, 8rem);
+    font-weight: 700;
+    line-height: 1;
+    color: var(--accent);
+  }
+
+  /* Accent line */
+  .accent-bar {
+    width: 60px;
+    height: 4px;
+    background: var(--accent);
+    margin-bottom: 1.5rem;
+    border-radius: 2px;
+  }
+
+  /* Cards grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+    max-width: 1200px;
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    transition: transform 0.2s;
+  }
+
+  .card:hover { transform: translateY(-2px); }
+
+  .slide.dark .card {
+    background: #1A1A1A;
+    border-color: #333;
+  }
+
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .card h3 { margin-bottom: 0.5rem; }
+  .card p { color: var(--text-secondary); font-size: 0.95rem; }
+  .slide.dark .card p { color: #999; }
+
+  /* Two column */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 2rem;
+    max-width: 1200px;
+  }
+
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; gap: 2rem; }
+    .slide { padding: 3rem 6%; }
+  }
+
+  /* Compare columns */
+  .compare-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  .compare-label.before {
+    background: #FEE2E2;
+    color: #991B1B;
+  }
+
+  .compare-label.after {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+
+  .slide.dark .compare-label.before {
+    background: #3B1111;
+    color: #FCA5A5;
+  }
+
+  .slide.dark .compare-label.after {
+    background: #052E16;
+    color: #6EE7B7;
+  }
+
+  /* Timeline / schedule */
+  .schedule-item {
+    display: flex;
+    gap: 2rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+    align-items: baseline;
+  }
+
+  .slide.dark .schedule-item { border-color: #333; }
+
+  .schedule-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--accent);
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+
+  .schedule-content h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .schedule-content p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+
+  .slide.dark .schedule-content p { color: #999; }
+
+  /* Discussion questions */
+  .question-list {
+    list-style: none;
+    margin-top: 1.5rem;
+    max-width: 800px;
+  }
+
+  .question-list li {
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 1.1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .slide.dark .question-list li { border-color: #333; }
+
+  .q-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent);
+    min-width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Code block style */
+  .code-block {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    color: #E5E5E5;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    margin-top: 1.5rem;
+    max-width: 800px;
+    overflow-x: auto;
+  }
+
+  .code-comment { color: #6A9955; }
+  .code-keyword { color: #569CD6; }
+  .code-string { color: #CE9178; }
+
+  /* Arrow diagram */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .flow-step {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .slide.dark .flow-step {
+    background: #1A1A1A;
+    border-color: #333;
+  }
+
+  .flow-arrow {
+    color: var(--accent);
+    font-size: 1.2rem;
+  }
+
+  /* Pull quote */
+  .pull-quote {
+    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-weight: 300;
+    line-height: 1.5;
+    max-width: 800px;
+    padding-left: 2rem;
+    border-left: 4px solid var(--accent);
+    margin-top: 2rem;
+  }
+
+  /* Section number */
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    position: absolute;
+    top: 2rem;
+    right: 3rem;
+  }
+
+  /* MDP logo placeholder */
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    position: absolute;
+    top: 2rem;
+    left: 3rem;
+    letter-spacing: 0.05em;
+  }
+
+  .slide.dark .logo { color: #666; }
+  .slide.dark .section-num { color: #666; }
+
+  /* Feature ownership */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+    max-width: 1000px;
+  }
+
+  .feature-slot {
+    border: 2px dashed #333;
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    min-height: 140px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .feature-slot .slot-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  .feature-slot .slot-desc {
+    font-size: 0.8rem;
+    color: #777;
+  }
+
+  .feature-slot .slot-owner {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    margin-top: 0.5rem;
+  }
+
+  /* Nav dots */
+  .nav {
+    position: fixed;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .nav a {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #CCC;
+    display: block;
+    transition: all 0.2s;
+  }
+
+  .nav a:hover, .nav a.active {
+    background: var(--accent);
+    transform: scale(1.3);
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav dots -->
+<nav class="nav" id="navDots"></nav>
+
+<!-- ====== SLIDE 1: Title ====== -->
+<section class="slide dark" id="s1">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">DAY 6 / 10</span>
+  <div class="label">Health Design Sprint 2026</div>
+  <h1>From App<br>to Product</h1>
+  <div class="accent-bar"></div>
+  <p class="subtitle">
+    You built something that works. You made it look intentional.
+    Today we make it work <em>reliably</em> — and ask what it could <em>really</em> teach.
+  </p>
+  <p style="margin-top: 2rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #666;">
+    Monday, February 24, 2026
+  </p>
+</section>
+
+<!-- ====== SLIDE 2: Today's Arc ====== -->
+<section class="slide" id="s2">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">01</span>
+  <div class="label">Today's Arc</div>
+  <h2>Three layers, one day</h2>
+
+  <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <div class="card-icon">⚙️</div>
+      <h3>Reliability</h3>
+      <p>From "it demos well" to "it works every time." Jigs, hardened workflows, reproducible systems.</p>
+      <p style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; margin-top: 1rem;">10:00 — JUSTIN MASSA</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔄</div>
+      <h3>Synthesis</h3>
+      <p>Apply Justin's jigs thinking + yesterday's design systems work from Zach. Code review, reframe, assign features.</p>
+      <p style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; margin-top: 1rem;">11:00 — FULL GROUP DEBRIEF</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Ownership</h3>
+      <p>Fork, explore depth, bring back. Each of you owns a feature this week.</p>
+      <p style="color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; margin-top: 1rem;">12:30 — FEATURE ASSIGNMENT</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 3: Schedule ====== -->
+<section class="slide dark" id="s3">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">02</span>
+  <div class="label">Schedule</div>
+  <h2>Day 6 at a glance</h2>
+
+  <div style="max-width: 700px; margin-top: 1rem;">
+    <div class="schedule-item">
+      <span class="schedule-time">10:00 – 11:00</span>
+      <div class="schedule-content">
+        <h3>Justin Massa — Jigs & AI Opportunity</h3>
+        <p>Remix Partners. Making AI workflows reproducible. The gap between demo and system.</p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">11:00 – 12:00</span>
+      <div class="schedule-content">
+        <h3>Full Group Debrief</h3>
+        <p>Respond to Justin. Apply yesterday's design systems work from Zach. Code review. The AI Opportunity reframe.</p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">12:00 – 12:30</span>
+      <div class="schedule-content">
+        <h3>Lunch</h3>
+        <p></p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">12:30 – 1:30</span>
+      <div class="schedule-content">
+        <h3>Feature Assignment + Work Setup</h3>
+        <p>Claim your feature direction. Set up branches. Define scope for the week.</p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">1:30 – 3:30</span>
+      <div class="schedule-content">
+        <h3>Work Session</h3>
+        <p>Individual feature branches. Fork, explore, go deep.</p>
+      </div>
+    </div>
+    <div class="schedule-item" style="border-bottom: none;">
+      <span class="schedule-time">3:30 – 4:00</span>
+      <div class="schedule-content">
+        <h3>Afternoon Standup</h3>
+        <p>What did you build? What's blocking you? What do you need tomorrow?</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 4: The Eureka — Walking the Dog ====== -->
+<section class="slide dark" id="s4">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">03</span>
+
+  <!-- Eureka marker -->
+  <div style="display: inline-flex; align-items: center; gap: 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 100px; padding: 0.4rem 1.2rem 0.4rem 0.8rem; margin-bottom: 1.5rem;">
+    <span style="font-size: 1.4rem;">💡</span>
+    <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);">Eureka Moment</span>
+  </div>
+
+  <h2>A walk, a podcast, and a reframe</h2>
+
+  <div style="max-width: 800px; margin-top: 1.5rem;">
+    <div style="display: flex; gap: 2rem; align-items: flex-start;">
+      <div style="font-size: 3rem; flex-shrink: 0; margin-top: 0.25rem;">🐕</div>
+      <div>
+        <p style="font-size: 1.1rem; line-height: 1.8; color: #BBBBBB;">
+          This morning I was walking the dog, listening to Nathaniel Whittemore's
+          <em>AI Daily Brief</em> podcast. He made a distinction that stopped me on the sidewalk:
+        </p>
+
+        <div class="pull-quote" style="margin: 2rem 0; color: var(--text-light);">
+          Most companies are using AI for <strong style="color: var(--accent);">efficiency</strong> —
+          doing existing things faster.<br>
+          The real unlock is AI as <strong style="color: var(--accent);">opportunity</strong> —
+          doing things that weren't possible before.
+        </div>
+
+        <p style="font-size: 1.1rem; line-height: 1.8; color: #BBBBBB;">
+          And I realized: <span style="color: var(--accent); font-weight: 500;">that's exactly where FCM Companion is right now.</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 2.5rem; display: flex; gap: 2rem; max-width: 800px;">
+    <div style="flex: 1; padding: 1.5rem; background: rgba(239, 68, 68, 0.08); border-radius: 10px; border-left: 4px solid #EF4444;">
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 600; color: #FCA5A5; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem;">Where we are</p>
+      <p style="font-size: 0.95rem; color: #FECACA;">
+        AI does the work behind the scenes. Generates cases, gives feedback. The student never sees it.
+        It's a faster version of what already exists.
+      </p>
+    </div>
+    <div style="flex: 1; padding: 1.5rem; background: rgba(16, 185, 129, 0.08); border-radius: 10px; border-left: 4px solid var(--accent);">
+      <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; font-weight: 600; color: #6EE7B7; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem;">Where we could go</p>
+      <p style="font-size: 0.95rem; color: #A7F3D0;">
+        AI is visible. Students learn to work <em>with</em> it — prompting, evaluating, critiquing clinical reasoning.
+        FCM Companion becomes how UVA teaches M1s to practice medicine with AI.
+      </p>
+    </div>
+  </div>
+
+  <p style="margin-top: 2rem; font-size: 0.85rem; color: #666; font-style: italic;">
+    Nathaniel Whittemore, <em>AI Daily Brief / Superintelligent</em> — "AI efficiency vs. AI opportunity"
+  </p>
+</section>
+
+<!-- ====== SLIDE 5: The Shift ====== -->
+<section class="slide" id="s5">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">04</span>
+  <div class="label">The Big Idea</div>
+  <h2>AI Efficiency → AI Opportunity</h2>
+
+  <div class="two-col" style="margin-top: 2.5rem;">
+    <div>
+      <span class="compare-label before">Current path</span>
+      <h3>AI Efficiency</h3>
+      <p class="subtitle" style="font-size: 1rem;">
+        "Do your existing FCM prep faster with AI under the hood."
+      </p>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.95rem;">
+        Generates practice cases. Gives feedback on differentials. Creates a portal.
+        Valuable — but incremental. Any study app could bolt this on.
+      </p>
+    </div>
+    <div>
+      <span class="compare-label after">The opportunity</span>
+      <h3>AI Opportunity</h3>
+      <p class="subtitle" style="font-size: 1rem;">
+        "Teach first-year medical students to <em>work with</em> generative AI through clinical content."
+      </p>
+      <p style="margin-top: 1rem; color: var(--text-secondary); font-size: 0.95rem;">
+        The AI isn't hidden — it's a visible co-pilot. Students see reasoning chains,
+        learn to prompt, critique clinical AI thinking. The learning objective shifts.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 6: What This Looks Like ====== -->
+<section class="slide dark" id="s6">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">05</span>
+  <div class="label">AI Opportunity — In Practice</div>
+  <h2>What this unlocks in FCM Companion</h2>
+
+  <div class="cards" style="grid-template-columns: repeat(2, 1fr);">
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>"Show Your Work" Mode</h3>
+      <p>AI's reasoning chain is visible. Students learn to spot where it's strong vs. where it hallucinates. Clinical AI literacy, not just clinical knowledge.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3>Prompted Practice</h3>
+      <p>Structured exercises: "Ask the AI this three different ways — notice how the differential changes." Teaching prompting through clinical scenarios.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>AI Research Mode</h3>
+      <p>Students combine patient data with literature search. Practice evaluating AI-generated clinical evidence. Learn when to trust, when to verify.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">👩‍🏫</div>
+      <h3>Instructor Dashboard</h3>
+      <p>Faculty see how students interact with AI — not just case answers. A new feedback loop that doesn't exist in current FCM.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 7: The Meta ====== -->
+<section class="slide" id="s7">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">06</span>
+  <div class="label">Why This Matters</div>
+  <div class="pull-quote">
+    You learned AI by building with it.<br>
+    Now you're building something that teaches <em>others</em> to work with AI.<br>
+    <span style="color: var(--accent);">That's the meta.</span>
+  </div>
+  <p class="subtitle" style="margin-top: 2rem;">
+    FCM Companion stops being "a study app" and becomes the vehicle through which
+    UVA introduces first-year medical students to generative AI in clinical contexts.
+    That's a pitch the provost's office wants to see.
+  </p>
+</section>
+
+<!-- ====== SLIDE 8: Guest — Justin Massa ====== -->
+<section class="slide dark" id="s8">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">07</span>
+  <div class="label">10:00 – 11:00 AM</div>
+  <h2>Justin Massa</h2>
+  <p class="subtitle" style="margin-bottom: 0.5rem;">Partner & Co-Founder, Remix Partners</p>
+  <p style="color: #777; font-size: 0.9rem;">Former IDEO. Helping companies build reliable AI systems.</p>
+
+  <div class="cards" style="grid-template-columns: repeat(2, 1fr); margin-top: 2rem;">
+    <div class="card">
+      <h3>Jigs</h3>
+      <p>The gap between "it worked when I showed it" and "it works every time." Frameworks for hardening AI workflows from demo to reproducible system.</p>
+    </div>
+    <div class="card">
+      <h3>Your Challenge</h3>
+      <p>Identify one workflow in your feature area that needs to be a jig — something that must work reliably every time, not just in demo conditions.</p>
+    </div>
+  </div>
+
+  <ul class="question-list" style="margin-top: 2rem;">
+    <li>
+      <span class="q-number">?</span>
+      <span>What's the most fragile part of FCM Companion right now — the thing that works in demo but would break for 100 M1 students?</span>
+    </li>
+    <li>
+      <span class="q-number">?</span>
+      <span>When you build a feature this week, how do you know it's reliable enough to merge back into the shared product?</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ====== SLIDE 9: Fork-Explore-Merge ====== -->
+<section class="slide dark" id="s9">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">08</span>
+  <div class="label">Week 2 Workflow</div>
+  <h2>Fork → Explore → Merge</h2>
+  <p class="subtitle">
+    You're a product team now. Each person owns a feature direction.
+    Go deep individually, bring it back to the shared product.
+  </p>
+
+  <div class="flow" style="margin-top: 2.5rem;">
+    <span class="flow-step">Main Branch</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Your Fork</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Explore & Build</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Test & Refine</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="border-color: var(--accent); color: var(--accent);">Merge Back</span>
+  </div>
+
+  <div class="code-block" style="margin-top: 2.5rem;">
+    <span class="code-comment"># This is how real product teams work</span><br>
+    <span class="code-keyword">git checkout</span> -b feature/your-name-feature<br>
+    <span class="code-comment"># build, test, iterate</span><br>
+    <span class="code-keyword">git push</span> origin feature/your-name-feature<br>
+    <span class="code-comment"># demo to team → review → merge</span>
+  </div>
+</section>
+
+<!-- ====== SLIDE 10: Feature Directions ====== -->
+<section class="slide" id="s10">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">09</span>
+  <div class="label">Claim Your Direction</div>
+  <h2>Feature areas to own</h2>
+  <p class="subtitle">
+    These are starting points — not assignments. You'll shape your feature in the work session. Come to debrief with a preference.
+  </p>
+
+  <div class="feature-grid" style="margin-top: 2rem;">
+    <div class="feature-slot">
+      <span class="slot-title">🔍 AI Co-Pilot Mode</span>
+      <span class="slot-desc">Visible reasoning chains. "Show your work" for the AI. Teaching M1s to think alongside AI.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">📱 Mobile Experience</span>
+      <span class="slot-desc">FCM Go — the "3 min before class" version. Card-based, bottom nav, quick review.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">🎯 Adaptive Learning</span>
+      <span class="slot-desc">Confidence calibration. Bayesian reasoning. Spaced repetition. Making practice smarter.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">👩‍🏫 Instructor Dashboard</span>
+      <span class="slot-desc">Faculty view of student AI interactions. Analytics. The feedback loop that doesn't exist yet.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">🎨 Design System</span>
+      <span class="slot-desc">Color, type, spacing, component library. Making FCM Companion look and feel intentional.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">📝 Content Engine</span>
+      <span class="slot-desc">Case generation pipeline. Jigs for reliable clinical content. Quality control workflows.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">🏗️ Architecture</span>
+      <span class="slot-desc">Database, auth, deployment. Making the foundation solid enough for real users.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+    <div class="feature-slot">
+      <span class="slot-title">💡 Your Idea</span>
+      <span class="slot-desc">Something we haven't thought of. Pitch it at debrief.</span>
+      <span class="slot-owner">[ unclaimed ]</span>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 11: Debrief Questions ====== -->
+<section class="slide dark" id="s11">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">10</span>
+  <div class="label">11:00 AM Debrief</div>
+  <h2>Questions for discussion</h2>
+
+  <ul class="question-list">
+    <li>
+      <span class="q-number">1</span>
+      <span>What's one thing from Justin's session that changes how you think about building?</span>
+    </li>
+    <li>
+      <span class="q-number">2</span>
+      <span>What's one thing from yesterday's session with Zach you want to apply to FCM Companion this week?</span>
+    </li>
+    <li>
+      <span class="q-number">3</span>
+      <span>Which feature direction are you drawn to — and why? What's the "jig" inside it?</span>
+    </li>
+    <li>
+      <span class="q-number">4</span>
+      <span>The eureka question: If FCM Companion explicitly teaches M1s to work <em>with</em> AI, what does that change about your feature?</span>
+    </li>
+    <li>
+      <span class="q-number">5</span>
+      <span>What needs to be true by Thursday for your feature to be mergeable?</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ====== SLIDE 12: Work Session ====== -->
+<section class="slide" id="s12">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">11</span>
+  <div class="label">1:30 – 3:30 PM</div>
+  <h2>Work Session</h2>
+
+  <div class="cards" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="card">
+      <div class="card-icon">🍴</div>
+      <h3>Fork</h3>
+      <p>Create your feature branch. Set up your workspace. Define scope — what's in, what's out.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🔬</div>
+      <h3>Explore</h3>
+      <p>Go deep. Build the thing. Break it. Rebuild it. Use Claude Code, Lovable, whatever gets you there.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Document</h3>
+      <p>What did you try? What worked? What didn't? Your process is as valuable as your output.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 2.5rem; padding: 1.5rem 2rem; background: #F0FDF4; border-radius: 10px; border-left: 4px solid var(--accent); max-width: 700px;">
+    <h3 style="font-size: 1rem; color: var(--accent-dim);">Standup at 3:30</h3>
+    <p style="font-size: 0.95rem; color: var(--text-secondary); margin-top: 0.25rem;">
+      30 seconds each: What did you build? What's blocking you? What do you need tomorrow?
+    </p>
+  </div>
+</section>
+
+<!-- ====== SLIDE 13: Week at a Glance ====== -->
+<section class="slide dark" id="s13">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">12</span>
+  <div class="label">Looking Ahead</div>
+  <h2>Week 2 at a glance</h2>
+
+  <div style="max-width: 700px; margin-top: 1rem;">
+    <div class="schedule-item">
+      <span class="schedule-time">Mon (Today)</span>
+      <div class="schedule-content">
+        <h3>From App to Product</h3>
+        <p>Justin Massa guest session, AI Opportunity reframe, feature assignment, first fork.</p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">Tue</span>
+      <div class="schedule-content">
+        <h3>Deep Build Day</h3>
+        <p>Individual feature depth. Morning standup, all-day work session, afternoon demo.</p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">Wed</span>
+      <div class="schedule-content">
+        <h3>Integration Day</h3>
+        <p>Start merging features back. Cross-team code review. Design consistency check.</p>
+      </div>
+    </div>
+    <div class="schedule-item">
+      <span class="schedule-time">Thu</span>
+      <div class="schedule-content">
+        <h3>Polish & Prepare</h3>
+        <p>Final integration. User testing. Presentation prep.</p>
+      </div>
+    </div>
+    <div class="schedule-item" style="border-bottom: none;">
+      <span class="schedule-time">Fri</span>
+      <div class="schedule-content">
+        <h3>Launch Day</h3>
+        <p>Final presentations to invited audience. Course debrief and reflection.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== SLIDE 14: Close ====== -->
+<section class="slide" id="s14">
+  <span class="logo">&lt;mdp&gt;</span>
+  <span class="section-num">—</span>
+  <div style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <div class="big-number">80%</div>
+    <h2 style="margin-top: 1rem;">You could build 80% of the apps you use.</h2>
+    <p class="subtitle" style="margin: 1.5rem auto 0; text-align: center;">
+      This week you prove it — and build one that teaches the next class how to do the same.
+    </p>
+    <div class="accent-bar" style="margin: 2rem auto 0;"></div>
+    <p style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
+      Let's build.
+    </p>
+  </div>
+</section>
+
+<script>
+  // Build nav dots
+  const slides = document.querySelectorAll('.slide');
+  const nav = document.getElementById('navDots');
+  slides.forEach((s, i) => {
+    const a = document.createElement('a');
+    a.href = '#' + s.id;
+    a.title = 'Slide ' + (i + 1);
+    nav.appendChild(a);
+  });
+
+  // Active dot on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const idx = Array.from(slides).indexOf(e.target);
+        nav.querySelectorAll('a').forEach((a, i) => {
+          a.classList.toggle('active', i === idx);
+        });
+      }
+    });
+  }, { threshold: 0.5 });
+
+  slides.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>
